@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ConfirmDialog from './ConfirmDialog'
 
-function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, onLogout }) {
+function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, onLogout, onToggleSidebar }) {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
     const handleLogoutClick = () => {
@@ -16,9 +16,23 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
     return (
         <>
             <header className="flex flex-row items-center justify-between gap-4 rounded-3xl border border-white/80 p-5">
-                <div className="w-1/2">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">workspace</p>
-                    <h2 className="text-xl sm:text-3xl font-semibold truncate">SWERI - TGP GROUP CHAT</h2>
+                <div className="w-1/2 flex items-center gap-3">
+                    <button
+                        onClick={onToggleSidebar}
+                        className="lg:hidden p-2.5 mr-2 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition shrink-0 shadow-lg shadow-sky-500/20"
+                        title="View Users"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </button>
+                    <div className="min-w-0">
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-400 truncate">workspace</p>
+                        <h2 className="text-xl sm:text-3xl font-semibold truncate">TGP GROUP CHAT</h2>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-end gap-2 sm:gap-4 w-1/2">

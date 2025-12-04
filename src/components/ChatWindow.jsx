@@ -45,7 +45,7 @@ function ChatWindow({
     }
 
     return (
-        <div className="h-[600px] rounded-2xl border border-white/10 p-2 overflow-hidden relative">
+        <div className="h-[660px] rounded-2xl border border-white/10 p-2 overflow-hidden relative">
             {loadError && (
                 <div className="mb-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 relative z-10">
                     {loadError}
