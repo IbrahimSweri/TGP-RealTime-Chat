@@ -97,7 +97,7 @@ function ChatWindow({
                                         </div>
 
                                         {/* Message Container */}
-                                        <div className={`flex flex-col min-w-0 flex-1 max-w-[calc(100%-8rem)] ${isOutgoing ? 'items-end' : 'items-start'}`}>
+                                        <div className={`flex flex-col min-w-0 flex-1 max-w-[85%] md:max-w-[70%] ${isOutgoing ? 'items-end' : 'items-start'}`}>
                                             {/* Display Name */}
                                             <span className="text-xs font-semibold mb-1 px-1 text-slate-100">
                                                 {displayName}
