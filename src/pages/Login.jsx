@@ -42,7 +42,7 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+      <div className="w-full max-w-md bg-slate-950 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
         <h1 className="text-2xl font-bold text-white text-center mb-2">Welcome back</h1>
         <p className="text-slate-400 text-center mb-8">Log in to your account to continue</p>
 
@@ -86,7 +86,8 @@ function Login() {
           <button
             type="submit"
             disabled={isDisabled}
-            className="w-full rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3.5 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-sky-500/20"
+            className="w-full rounded-xl bg-blue-500  hover:bg-blue-600 t
+ text-white font-semibold py-3.5 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-sky-500/20"
           >
             {isLoading ? 'Logging in…' : 'Log in'}
           </button>

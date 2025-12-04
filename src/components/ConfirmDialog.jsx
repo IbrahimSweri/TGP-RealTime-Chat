@@ -7,7 +7,7 @@ function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <div className="bg-slate-950 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
                 <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
                 <p className="text-slate-300 text-sm mb-6">{message}</p>
                 <div className="flex gap-3 justify-end">

@@ -18,7 +18,7 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
             <header className="flex flex-row items-center justify-between gap-4 rounded-3xl border border-white/80 p-5">
                 <div className="w-1/2">
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400">workspace</p>
-                    <h2 className="text-xl sm:text-3xl font-semibold truncate">TGP GROUP CHAT</h2>
+                    <h2 className="text-xl sm:text-3xl font-semibold truncate">SWERI - TGP GROUP CHAT</h2>
                 </div>
 
                 <div className="flex items-center justify-end gap-2 sm:gap-4 w-1/2">

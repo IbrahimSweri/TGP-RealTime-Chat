@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthLayout from '../components/AuthLayout'
 import { useAuth } from '../contexts/AuthContext'
 
 function Signup() {
@@ -41,71 +40,77 @@ function Signup() {
   }
 
   return (
-    <AuthLayout
-      title="Create an account"
-      subtitle="Sign up instantly — email confirmations depend on your Supabase settings"
-      footerLink={{ prefix: 'Already have an account?', label: 'Log in', href: '/login' }}
-    >
-      <form className="space-y-4" onSubmit={handleSubmit}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-slate-950 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <h1 className="text-2xl font-bold text-white text-center mb-2">Create an account</h1>
+        <p className="text-slate-400 text-center mb-8">  note : no  email confirmation </p>
         {errorMessage && (
-          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {errorMessage}
           </div>
         )}
-        <div className="space-y-2">
-          <label htmlFor="displayName" className="text-sm text-slate-300">
-            Display name
-          </label>
-          <input
-            id="displayName"
-            name="displayName"
-            placeholder="Taylor Swift"
-            required
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-white/30"
-            value={form.displayName}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm text-slate-300">
-            Email address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            inputMode="email"
-            placeholder="you@example.com"
-            required
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-white/30"
-            value={form.email}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="password" className="text-sm text-slate-300">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            required
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-white/30"
-            value={form.password}
-            onChange={handleChange}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={isDisabled}
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isLoading ? 'Creating account…' : 'Create account'}
-        </button>
-      </form>
-    </AuthLayout>
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <label htmlFor="displayName" className="text-sm font-medium text-slate-300">
+              Display name
+            </label>
+            <input
+              id="displayName"
+              name="displayName"
+              placeholder="Bobby Fischer"
+              required
+              className="w-full rounded-xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-slate-200 italic outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition"
+              value={form.displayName}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium text-slate-300">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              inputMode="email"
+              placeholder="you@example.com"
+              required
+              className="w-full rounded-xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-slate-200 italic outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition"
+              value={form.email}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium text-slate-300">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="password"
+              required
+              className="w-full rounded-xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-slate-200 italic outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition"
+              value={form.password}
+              onChange={handleChange}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isDisabled}
+            className="w-full rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3.5 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-sky-500/20"
+          >
+            {isLoading ? 'Creating account…' : 'Create account'}
+          </button>
+        </form>
+        <p className="text-center text-sm text-slate-400 mt-8">
+          Already have an account?{' '}
+          <a href="/login" className="text-sky-400 hover:text-sky-300 font-medium transition">
+            Log in
+          </a>
+        </p>
+      </div>
+    </div>
   )
 }
 

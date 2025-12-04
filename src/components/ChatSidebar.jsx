@@ -16,9 +16,9 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose }) {
             <aside
                 className={`
                     fixed lg:relative top-0 left-0 h-[100dvh] lg:h-full w-72 
-                    bg-slate-900/50 backdrop-blur-xl 
-                    lg:border lg:border-white/10 lg:rounded-2xl
-                    border-r border-white/10 lg:border-r-white/10
+                    bg-slate-950 backdrop-blur-xl 
+                    lg:border lg:border-white lg:rounded-2xl
+                    border-r border-white/10 
                     transform transition-transform duration-300 z-50
                     ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                     flex flex-col
