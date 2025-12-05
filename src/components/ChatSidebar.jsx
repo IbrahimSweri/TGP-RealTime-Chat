@@ -1,4 +1,14 @@
-function ChatSidebar({ users, onlineUserIds, isOpen, onClose }) {
+import { memo } from 'react'
+import { UserListSkeleton } from './Skeletons'
+import { UserItem } from './MemoizedComponents'
+
+/**
+ * ChatSidebar Component
+ * 
+ * Displays the list of users with online/offline status.
+ * Uses memoized UserItem for better performance.
+ */
+function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false }) {
     const totalUsers = users.length
     const onlineUsers = onlineUserIds.size
 
@@ -15,17 +25,19 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose }) {
             {/* Sidebar */}
             <aside
                 className={`
-                    fixed lg:relative top-0 left-0 h-[100dvh] lg:h-full w-72 
-                    bg-slate-950 backdrop-blur-xl 
-                    lg:border lg:border-white lg:rounded-2xl
-                    border-r border-white/10 
+                    fixed lg:relative top-0 left-0 
+                    h-[100dvh] lg:h-[650px]
+                    w-72 
+                    bg-slate-950/95 backdrop-blur-xl 
+                    lg:border lg:border-blue-500/40 lg:rounded-2xl lg:shadow-md lg:shadow-blue-500/20
+                    border-r border-white/10 lg:border-r-0
                     transform transition-transform duration-300 z-50
                     ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                     flex flex-col
                 `}
             >
                 {/* Header */}
-                <div className="p-5 border-b border-white/10">
+                <div className="p-5 border-b border-white/10 shrink-0">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-white">Users</h3>
                         <button
@@ -52,56 +64,23 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose }) {
                     </div>
                 </div>
 
-                {/* User List */}
-                <div className="flex-1 overflow-y-auto p-3">
-                    {users.length === 0 ? (
+                {/* User List with Custom Scrollbar */}
+                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                    {isLoading ? (
+                        <UserListSkeleton />
+                    ) : users.length === 0 ? (
                         <div className="text-center text-slate-400 text-sm py-8">
                             No users found
                         </div>
                     ) : (
                         <div className="space-y-1">
-                            {users.map((user) => {
-                                const isOnline = onlineUserIds.has(user.id)
-                                const displayName = user.username || 'Anonymous'
-                                const initials = displayName[0]?.toUpperCase() || '?'
-
-                                return (
-                                    <div
-                                        key={user.id}
-                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition"
-                                    >
-                                        {/* Avatar */}
-                                        <div className="relative">
-                                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold overflow-hidden">
-                                                {user.avatar_url ? (
-                                                    <img
-                                                        src={user.avatar_url}
-                                                        alt={displayName}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    initials
-                                                )}
-                                            </div>
-                                            {/* Status Indicator */}
-                                            <div
-                                                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${isOnline ? 'bg-green-500' : 'bg-slate-500'
-                                                    }`}
-                                            />
-                                        </div>
-
-                                        {/* User Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-white truncate">
-                                                {displayName}
-                                            </p>
-                                            <p className="text-xs text-slate-400">
-                                                {isOnline ? 'Online' : 'Offline'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )
-                            })}
+                            {users.map((user) => (
+                                <UserItem
+                                    key={user.id}
+                                    user={user}
+                                    isOnline={onlineUserIds.has(user.id)}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
@@ -110,4 +89,5 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose }) {
     )
 }
 
-export default ChatSidebar
+// Memoize the entire sidebar
+export default memo(ChatSidebar)

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChatContainer, MainContainer, MessageInput, MessageList } from '@chatscope/chat-ui-kit-react'
 import ConfirmDialog from './ConfirmDialog'
-import bgTelegram from '../assets/bg-telegram.jpg'
+import { ChatMessagesSkeleton } from './Skeletons'
 
 function ChatWindow({
     messages,
@@ -45,28 +45,27 @@ function ChatWindow({
     }
 
     return (
-        <div className="h-[600px] rounded-2xl border border-white/10 p-2 overflow-hidden relative">
-            {loadError && (
-                <div className="mb-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 relative z-10">
-                    {loadError}
-                </div>
-            )}
+        <div className="h-[550px] ">
             <MainContainer
                 responsive
-                className="h-[520px] rounded-2xl overflow-hidden relative"
+                className="rounded-2xl overflow-hidden relative"
                 style={{
-                    backgroundImage: `url(${bgTelegram})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
+                    background: '#020617',
+                    border: '1px solid rgba(59, 130, 246, 0.4)',
+                    padding: '0.5rem',
+                    backdropFilter: 'blur(24px)',
+                    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.2)',
                 }}
             >
+                {loadError && (
+                    <div className="mb-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 relative z-10">
+                        {loadError}
+                    </div>
+                )}
                 <ChatContainer style={{ background: 'transparent' }}>
                     <MessageList style={{ background: 'transparent' }}>
                         {isLoadingMessages ? (
-                            <div className="py-8 text-center text-sm text-slate-400">Loading messages…</div>
-                        ) : messages.length === 0 ? (
-                            <div className="py-8 text-center text-sm text-slate-400">Be the first to start the conversation.</div>
+                            <ChatMessagesSkeleton />
                         ) : (
                             messages.map((message) => {
                                 const isOutgoing = message.userId && message.userId === user?.id
@@ -90,7 +89,12 @@ function ChatWindow({
                                             title={displayName}
                                         >
                                             {message.avatarUrl ? (
-                                                <img src={message.avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+                                                <img
+                                                    src={message.avatarUrl}
+                                                    alt={displayName}
+                                                    loading="lazy"
+                                                    className="h-full w-full object-cover"
+                                                />
                                             ) : (
                                                 initials
                                             )}

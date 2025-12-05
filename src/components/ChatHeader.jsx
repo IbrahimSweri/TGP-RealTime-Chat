@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import ConfirmDialog from './ConfirmDialog'
+import { SkeletonPulse } from './Skeletons'
 
-function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, onLogout, onToggleSidebar }) {
+function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, onLogout, onToggleSidebar, isLoading = false }) {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
     const handleLogoutClick = () => {
@@ -13,63 +14,134 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
         onLogout()
     }
 
+    // Avatar component with skeleton support
+    const Avatar = ({ size = 'h-12 w-12', textSize = 'text-lg' }) => {
+        if (isLoading) {
+            return <SkeletonPulse className={`${size} rounded-full`} />
+        }
+
+        return (
+            <div className={`flex ${size} items-center justify-center rounded-full bg-white/10 ${textSize} font-semibold group-hover:bg-white/20 transition overflow-hidden`}>
+                {user?.user_metadata?.avatar_url ? (
+                    <img
+                        src={user.user_metadata.avatar_url}
+                        alt={headerDisplayName}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                    />
+                ) : (
+                    headerInitials
+                )}
+            </div>
+        )
+    }
+
     return (
         <>
-            <header className="flex flex-row items-center justify-between gap-4 rounded-3xl border border-white/80 p-5">
-                <div className="w-1/2 flex items-center gap-3">
-                    <button
-                        onClick={onToggleSidebar}
-                        className="lg:hidden p-2.5 mr-2 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition shrink-0 shadow-lg shadow-sky-500/20"
-                        title="View Users"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                    </button>
-                    <div className="min-w-0">
-                        <p className="text-xs uppercase tracking-[0.35em] text-slate-400 truncate">workspace</p>
-                        <h2 className="text-xl sm:text-3xl font-semibold truncate">TGP GROUP CHAT</h2>
+            <header className="rounded-3xl border border-blue-500/40 p-5 backdrop-blur-sm bg-slate-950/80 shadow-md shadow-blue-500/20">
+                {/* Desktop Layout - Single Row */}
+                <div className="hidden lg:flex flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="min-w-0">
+                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400 truncate">workspace</p>
+                            <h2 className="text-3xl font-semibold truncate">SWERI GROUP CHAT</h2>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-4">
+                        <button
+                            onClick={onProfileClick}
+                            className="flex items-center gap-3 text-left transition hover:opacity-80 group"
+                        >
+                            <Avatar />
+                            <div className="text-sm">
+                                {isLoading ? (
+                                    <SkeletonPulse className="w-24 h-4" />
+                                ) : (
+                                    <>
+                                        <p className="font-medium">{headerDisplayName}</p>
+                                        <p className="text-slate-400 flex items-center gap-1">
+                                            Online <span className="text-lime-500 text-lg">•</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline">
+                                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                            </svg>
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleLogoutClick}
+                            className="rounded-full p-2.5 border border-white/10 text-white transition hover:border-white/40 hover:bg-white/5"
+                            title="Logout"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 sm:gap-4 w-1/2">
-                    <button
-                        onClick={onProfileClick}
-                        className="flex items-center gap-3 text-left transition hover:opacity-80 group"
-                    >
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-lg font-semibold group-hover:bg-white/20 transition overflow-hidden">
-                            {user?.user_metadata?.avatar_url ? (
-                                <img src={user.user_metadata.avatar_url} alt={headerDisplayName} className="h-full w-full object-cover" />
-                            ) : (
-                                headerInitials
-                            )}
+                {/* Mobile Layout - Improved Single Row */}
+                <div className="lg:hidden flex items-center justify-between gap-3">
+                    {/* Left Side: Users Button + Workspace Title */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <button
+                            onClick={onToggleSidebar}
+                            className="p-2.5 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition shrink-0 shadow-lg shadow-sky-500/20"
+                            title="View Users"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </button>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 truncate leading-tight">workspace</p>
+                            <h2 className="text-base sm:text-lg font-bold truncate leading-tight mt-0.5">SWERI GROUP CHAT</h2>
                         </div>
-                        <div className="text-sm">
-                            <p className="font-medium">{headerDisplayName}</p>
-                            <p className="text-slate-400 flex items-center gap-1">
-                                Online <span className="text-lime-500 text-lg">•</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline">
-                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                </svg>
-                            </p>
-                        </div>
-                    </button>
+                    </div>
 
-                    <button
-                        type="button"
-                        onClick={handleLogoutClick}
-                        className="rounded-full p-2.5 border border-white/10 text-white transition hover:border-white/40 hover:bg-white/5"
-                        title="Logout"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                    </button>
+                    {/* Right Side: Avatar + Logout */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={onProfileClick}
+                            className="flex items-center gap-2 text-left transition hover:opacity-80 group"
+                        >
+                            <Avatar size="h-9 w-9" textSize="text-sm" />
+                            <div className="text-xs min-w-0 hidden sm:block">
+                                {isLoading ? (
+                                    <SkeletonPulse className="w-16 h-3" />
+                                ) : (
+                                    <>
+                                        <p className="font-medium truncate max-w-[100px]">{headerDisplayName}</p>
+                                        <p className="text-slate-400 flex items-center gap-1">
+                                            <span className="text-lime-500 text-base">•</span> Online
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleLogoutClick}
+                            className="rounded-full p-2 border border-white/10 text-white transition hover:border-white/40 hover:bg-white/5 shrink-0"
+                            title="Logout"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </header>
 
