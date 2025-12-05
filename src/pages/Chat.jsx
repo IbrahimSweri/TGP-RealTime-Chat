@@ -70,7 +70,7 @@ function Chat() {
   // Render
   // ============================================
   return (
-    <div className="h-screen overflow-hidden bg-slate-950 px-4 py-4 text-white flex flex-col">
+    <div className="h-[100dvh] overflow-hidden bg-slate-950 px-4 pt-4 pb-2 sm:pb-4 text-white flex flex-col">
       {/* Profile Dialog */}
       <ProfileDialog
         isOpen={isProfileOpen}
