@@ -26,7 +26,7 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false 
             <aside
                 className={`
                     fixed lg:relative top-0 left-0 
-                    h-[100dvh] lg:h-[650px]
+                    h-[100dvh] lg:h-full
                     w-72 
                     bg-slate-950/95 backdrop-blur-xl 
                     lg:border lg:border-blue-500/40 lg:rounded-2xl lg:shadow-md lg:shadow-blue-500/20
@@ -65,7 +65,7 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false 
                 </div>
 
                 {/* User List with Custom Scrollbar */}
-                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar overscroll-contain">
                     {isLoading ? (
                         <UserListSkeleton />
                     ) : users.length === 0 ? (

@@ -45,7 +45,7 @@ function ChatWindow({
     }
 
     return (
-        <div className="h-[550px] ">
+        <div className="h-full flex flex-col">
             <MainContainer
                 responsive
                 className="rounded-2xl overflow-hidden relative"
@@ -55,6 +55,7 @@ function ChatWindow({
                     padding: '0.5rem',
                     backdropFilter: 'blur(24px)',
                     boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.2)',
+                    height: '100%',
                 }}
             >
                 {loadError && (
