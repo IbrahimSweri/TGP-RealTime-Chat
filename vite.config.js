@@ -22,31 +22,15 @@ export default defineConfig({
     
     rollupOptions: {
       output: {
-        // Manual code splitting for better caching
-        manualChunks(id) {
-          // React core
-          if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') || 
-              id.includes('node_modules/react-router')) {
-            return 'vendor-react'
-          }
-          
-          // Supabase
-          if (id.includes('node_modules/@supabase')) {
-            return 'vendor-supabase'
-          }
-          
-          // Chat UI kit
-          if (id.includes('node_modules/@chatscope')) {
-            return 'vendor-chat-ui'
-          }
-          
-          // Utilities
-          if (id.includes('node_modules/clsx') || 
-              id.includes('node_modules/tailwind-merge') ||
-              id.includes('node_modules/date-fns')) {
-            return 'vendor-utils'
-          }
+        // Simpler chunking to avoid React loading order issues
+        manualChunks: {
+          // Keep React and chatscope together to ensure proper loading order
+          'vendor': [
+            'react', 
+            'react-dom', 
+            'react-router-dom',
+            '@chatscope/chat-ui-kit-react',
+          ],
         },
       },
     },
