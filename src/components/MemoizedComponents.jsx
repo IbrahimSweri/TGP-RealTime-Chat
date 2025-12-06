@@ -87,8 +87,8 @@ export const MessageItem = memo(function MessageItem({
                 <div className="relative">
                     <div
                         className={`rounded-2xl px-3 py-2 break-words relative ${isOutgoing
-                                ? 'bg-sky-500 text-white rounded-tr-sm'
-                                : 'bg-green-600 text-white rounded-tl-sm'
+                            ? 'bg-sky-500 text-white rounded-tr-sm'
+                            : 'bg-green-600 text-white rounded-tl-sm'
                             }`}
                     >
                         {isEditing ? (
@@ -169,12 +169,18 @@ export const MessageItem = memo(function MessageItem({
  * 
  * Only re-renders when user data or online status changes.
  */
-export const UserItem = memo(function UserItem({ user, isOnline }) {
+export const UserItem = memo(function UserItem({ user, isOnline, onClick, unreadCount = 0 }) {
     const displayName = user.username || 'Anonymous'
     const initials = displayName[0]?.toUpperCase() || '?'
 
     return (
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition">
+        <div
+            onClick={onClick}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && onClick && onClick()}
+        >
             {/* Avatar */}
             <div className="relative">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold overflow-hidden">
@@ -203,6 +209,13 @@ export const UserItem = memo(function UserItem({ user, isOnline }) {
                     {isOnline ? 'Online' : 'Offline'}
                 </p>
             </div>
+
+            {/* Unread Badge */}
+            {unreadCount > 0 && (
+                <div className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm shadow-blue-500/20">
+                    {unreadCount}
+                </div>
+            )}
         </div>
     )
 })

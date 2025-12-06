@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import AuthLayout from '../components/AuthLayout'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuthStore } from '../stores/useAuthStore'
 
 function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login } = useAuth()
+  const login = useAuthStore((state) => state.login)
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [isLoading, setIsLoading] = useState(false)
@@ -102,8 +101,6 @@ function Login() {
       </div>
     </div>
   )
-
-
 }
 
 export default Login

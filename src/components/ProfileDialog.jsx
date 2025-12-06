@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuthStore } from '../stores/useAuthStore'
 import { supabase } from '../lib/supabase'
 
 export default function ProfileDialog({ isOpen, onClose }) {
-    const { user } = useAuth()
+    const user = useAuthStore((state) => state.user)
     const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '')
     const [avatarFile, setAvatarFile] = useState(null)
     const [isLoading, setIsLoading] = useState(false)

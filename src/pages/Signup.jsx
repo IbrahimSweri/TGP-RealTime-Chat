@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuthStore } from '../stores/useAuthStore'
 
 function Signup() {
   const navigate = useNavigate()
-  const { signup } = useAuth()
+  const signup = useAuthStore((state) => state.signup)
   const [form, setForm] = useState({ email: '', password: '', displayName: '' })
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')

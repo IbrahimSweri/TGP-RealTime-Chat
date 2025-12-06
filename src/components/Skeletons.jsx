@@ -43,8 +43,17 @@ export function ChatMessagesSkeleton() {
         <div className="p-4 space-y-4">
             <MessageSkeleton isOutgoing={false} />
             <MessageSkeleton isOutgoing={true} />
+            <MessageSkeleton isOutgoing={true} />
+
             <MessageSkeleton isOutgoing={false} />
             <MessageSkeleton isOutgoing={false} />
+            <MessageSkeleton isOutgoing={true} />
+            <MessageSkeleton isOutgoing={false} />
+            <MessageSkeleton isOutgoing={true} />
+            <MessageSkeleton isOutgoing={true} />
+
+            <MessageSkeleton isOutgoing={false} />
+
             <MessageSkeleton isOutgoing={true} />
         </div>
     )
@@ -75,6 +84,12 @@ export function UserListSkeleton() {
     return (
         <div className="space-y-1">
             <UserItemSkeleton />
+            <UserItemSkeleton />
+            <UserItemSkeleton />
+            <UserItemSkeleton />         <UserItemSkeleton />
+            <UserItemSkeleton />
+            <UserItemSkeleton />
+            <UserItemSkeleton />         <UserItemSkeleton />
             <UserItemSkeleton />
             <UserItemSkeleton />
             <UserItemSkeleton />

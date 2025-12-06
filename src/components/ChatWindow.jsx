@@ -5,7 +5,7 @@ import ConfirmDialog from './ConfirmDialog'
 import { ChatMessagesSkeleton } from './Skeletons'
 
 // 1. Extract Message Item to a separate memoized component for performance
-const MessageItem = memo(({ message, user, editingMessageId, editContent, setEditContent, cancelEditing, saveEdit, toggleActions, startEditing, setDeleteConfirm, showActionsForMessage }) => {
+const MessageItem = memo(({ message, user, editingMessageId, editContent, setEditContent, cancelEditing, saveEdit, toggleActions, startEditing, setDeleteConfirm, showActionsForMessage, setShowActionsForMessage }) => {
     const isOutgoing = message.userId && message.userId === user?.id
     const displayName = message.username
     const initials = displayName?.[0]?.toUpperCase() ?? '?'
@@ -19,7 +19,7 @@ const MessageItem = memo(({ message, user, editingMessageId, editContent, setEdi
         // FIX: Changed mb-3 (margin) to py-2 (padding). 
         // Virtuoso measures padding correctly, but struggles with margins.
         <div className={`flex gap-2 px-2 py-2 group ${isOutgoing ? 'flex-row-reverse' : 'flex-row'}`}>
-            
+
             {/* Avatar */}
             <div
                 className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-gray-800 text-xs font-semibold overflow-hidden ${isOutgoing ? 'bg-sky-500' : 'bg-green-500'}`}
@@ -73,7 +73,7 @@ const MessageItem = memo(({ message, user, editingMessageId, editContent, setEdi
                                         <button onClick={(e) => { e.stopPropagation(); startEditing(message) }} className="p-1.5 hover:bg-white/10 rounded-md text-slate-300 hover:text-white transition">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                                         </button>
-                                        <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ isOpen: true, messageId: message.id }); showActionsForMessage(null) }} className="p-1.5 hover:bg-red-500/20 rounded-md text-slate-300 hover:text-red-400 transition">
+                                        <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ isOpen: true, messageId: message.id }); setShowActionsForMessage(null) }} className="p-1.5 hover:bg-red-500/20 rounded-md text-slate-300 hover:text-red-400 transition">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                         </button>
                                     </div>
@@ -92,7 +92,7 @@ function ChatWindow({ messages, isLoadingMessages, loadError, user, messageInput
     const [editContent, setEditContent] = useState('')
     const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, messageId: null })
     const [showActionsForMessage, setShowActionsForMessage] = useState(null)
-    
+
     const virtuosoRef = useRef(null)
 
     const startEditing = (message) => {
@@ -133,16 +133,16 @@ function ChatWindow({ messages, isLoadingMessages, loadError, user, messageInput
                                 ref={virtuosoRef}
                                 style={{ height: '100%' }}
                                 data={messages}
-                                
+
                                 // FIX 2: Overscan
                                 // Renders 200px of extra content above/below the visible area
                                 // This prevents the "white gap" when you scroll up quickly
-                                overscan={200} 
-                                
+                                overscan={200}
+
                                 followOutput="auto"
                                 initialTopMostItemIndex={messages.length - 1}
                                 itemContent={(index, message) => (
-                                    <MessageItem 
+                                    <MessageItem
                                         message={message}
                                         user={user}
                                         editingMessageId={editingMessageId}
@@ -154,6 +154,7 @@ function ChatWindow({ messages, isLoadingMessages, loadError, user, messageInput
                                         startEditing={startEditing}
                                         setDeleteConfirm={setDeleteConfirm}
                                         showActionsForMessage={showActionsForMessage}
+                                        setShowActionsForMessage={setShowActionsForMessage}
                                     />
                                 )}
                             />

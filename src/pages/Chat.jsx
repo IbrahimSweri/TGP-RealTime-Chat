@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 
-// Custom Hooks
-import { useRoom } from '../hooks/useRoom'
-import { useMessages } from '../hooks/useMessages'
-import { usePresence } from '../hooks/usePresence'
+// Stores
+import { useAuthStore } from '../stores/useAuthStore'
+import { useChatStore } from '../stores/useChatStore'
+import { usePresenceStore } from '../stores/usePresenceStore'
+import { useUIStore } from '../stores/useUIStore'
 
 // Components
 import ProfileDialog from '../components/ProfileDialog'
@@ -16,55 +16,114 @@ import ChatSidebar from '../components/ChatSidebar'
 /**
  * Chat Page
  * 
- * Main chat interface that composes all chat functionality.
- * Uses three focused hooks for room, messages, and presence.
+ * Main chat interface composed of Zustand stores.
+ * Handles initialization of room, messages, and presence using store actions.
  */
 function Chat() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
 
-  // ============================================
-  // UI State
-  // ============================================
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // Auth Store
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
 
-  // ============================================
-  // Custom Hooks
-  // ============================================
+  // Chat Store
+  const messages = useChatStore((state) => state.messages)
+  const messageInput = useChatStore((state) => state.messageInput)
+  const setMessageInput = useChatStore((state) => state.setMessageInput)
+  const isLoadingMessages = useChatStore((state) => state.isLoadingMessages)
+  const isLoadingRoom = useChatStore((state) => state.isLoadingRoom)
+  const roomError = useChatStore((state) => state.error) // Chat store error (room/messages)
+  const roomId = useChatStore((state) => state.roomId)
+  const initDefaultRoom = useChatStore((state) => state.initDefaultRoom)
+  const fetchMessages = useChatStore((state) => state.fetchMessages)
+  const subscribeToAllMessages = useChatStore((state) => state.subscribeToAllMessages)
+  const sendMessage = useChatStore((state) => state.sendMessage)
+  const editMessage = useChatStore((state) => state.editMessage)
+  const deleteMessage = useChatStore((state) => state.deleteMessage)
+  const selectUser = useChatStore((state) => state.selectUser)
+  const selectedUser = useChatStore((state) => state.selectedUser)
+  const unreadCounts = useChatStore((state) => state.unreadCounts)
 
-  // Room initialization
-  const { roomId, isLoading: isLoadingRoom, error: roomError, supabaseReady } = useRoom()
+  // Presence Store
+  const allUsers = usePresenceStore((state) => state.allUsers)
+  const onlineUserIds = usePresenceStore((state) => state.onlineUserIds)
+  const isLoadingUsers = usePresenceStore((state) => state.isLoading)
+  const fetchUsers = usePresenceStore((state) => state.fetchUsers)
+  const subscribeToPresence = usePresenceStore((state) => state.subscribeToPresence)
 
-  // Messages (depends on roomId)
-  const {
-    messages,
-    messageInput,
-    setMessageInput,
-    isLoading: isLoadingMessages,
-    error: messageError,
-    sendMessage,
-    editMessage,
-    deleteMessage,
-  } = useMessages(roomId, user)
+  // UI Store
+  const isProfileOpen = useUIStore((state) => state.isProfileOpen)
+  const setProfileOpen = useUIStore((state) => state.setProfileOpen)
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
+  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen)
 
-  // Presence (depends on roomId and user)
-  const { allUsers, onlineUserIds, isLoading: isLoadingUsers } = usePresence(roomId, user)
-
-  // ============================================
   // Derived State
-  // ============================================
   const headerDisplayName = user?.user_metadata?.display_name || user?.email
   const headerInitials = headerDisplayName?.[0]?.toUpperCase() ?? '?'
-  const loadError = roomError || messageError
 
-  // ============================================
+  // Chat Title Logic
+  const chatTitle = selectedUser
+    ? (selectedUser.username || 'Anonymous')
+    : 'SWERI GROUP CHAT'
+
+  const chatSubtitle = selectedUser
+    ? 'Direct Message'
+    : 'WORKSPACE'
+
+  const selectedUserStatus = selectedUser && onlineUserIds.has(selectedUser.id) ? 'Online' : 'Offline'
+
   // Handlers
-  // ============================================
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
   }
+
+  const handleSend = () => sendMessage(messageInput, user)
+
+  const handleSelectUser = async (user) => {
+    // Pass entire user object
+    await selectUser(user)
+    setSidebarOpen(false)
+  }
+
+  const handleSelectGeneral = async () => {
+    await initDefaultRoom(true)
+    setSidebarOpen(false)
+  }
+
+  // ============================================
+  // Effects
+  // ============================================
+
+  // 1. Initialize Room
+  useEffect(() => {
+    initDefaultRoom()
+  }, [initDefaultRoom])
+
+  // 2. Fetch Messages (on room change) & Subscribe Globally (once)
+  useEffect(() => {
+    if (roomId) {
+      fetchMessages()
+    }
+  }, [roomId, fetchMessages])
+
+  useEffect(() => {
+    const cleanup = subscribeToAllMessages() // Global subscription
+    return () => {
+      cleanup && cleanup()
+    }
+  }, [subscribeToAllMessages])
+
+  // 3. Presence: Fetch Users & Subscribe
+  useEffect(() => {
+    fetchUsers()
+    if (user) {
+      const cleanup = subscribeToPresence(user)
+      return () => {
+        cleanup && cleanup()
+      }
+    }
+  }, [user, fetchUsers, subscribeToPresence])
 
   // ============================================
   // Render
@@ -74,7 +133,7 @@ function Chat() {
       {/* Profile Dialog */}
       <ProfileDialog
         isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
+        onClose={() => setProfileOpen(false)}
       />
 
       <div className="mx-auto flex max-w-7xl gap-4 flex-1 min-h-0 w-full">
@@ -83,8 +142,11 @@ function Chat() {
           users={allUsers}
           onlineUserIds={onlineUserIds}
           isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
+          onClose={() => setSidebarOpen(false)}
           isLoading={isLoadingUsers}
+          onSelectUser={handleSelectUser}
+          onSelectGeneral={handleSelectGeneral}
+          unreadCounts={unreadCounts}
         />
 
         {/* Main Content */}
@@ -93,11 +155,13 @@ function Chat() {
           <div className={`shrink-0 transition-all duration-300 ${isSidebarOpen ? 'blur-sm' : ''}`}>
             <ChatHeader
               user={user}
+              chatTitle={chatTitle}
+              chatSubtitle={chatSubtitle}
               headerDisplayName={headerDisplayName}
               headerInitials={headerInitials}
-              onProfileClick={() => setIsProfileOpen(true)}
+              onProfileClick={() => setProfileOpen(true)}
               onLogout={handleLogout}
-              onToggleSidebar={() => setIsSidebarOpen(true)}
+              onToggleSidebar={() => setSidebarOpen(true)}
               isLoading={isLoadingRoom}
             />
           </div>
@@ -107,14 +171,14 @@ function Chat() {
             <ChatWindow
               messages={messages}
               isLoadingMessages={isLoadingMessages}
-              loadError={loadError}
+              loadError={roomError}
               user={user}
               messageInput={messageInput}
               setMessageInput={setMessageInput}
-              onSend={sendMessage}
+              onSend={handleSend}
               onEditMessage={editMessage}
               onDeleteMessage={deleteMessage}
-              supabaseReady={supabaseReady}
+              supabaseReady={true} // Stores handle availability
               roomId={roomId}
             />
           </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ConfirmDialog from './ConfirmDialog'
 import { SkeletonPulse } from './Skeletons'
 
-function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, onLogout, onToggleSidebar, isLoading = false }) {
+function ChatHeader({ user, chatTitle = 'SWERI GROUP CHAT', chatSubtitle = 'WORKSPACE', headerDisplayName, headerInitials, onProfileClick, onLogout, onToggleSidebar, isLoading = false }) {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
     const handleLogoutClick = () => {
@@ -14,12 +14,8 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
         onLogout()
     }
 
-    // Avatar component with skeleton support
+    // Avatar component
     const Avatar = ({ size = 'h-12 w-12', textSize = 'text-lg' }) => {
-        if (isLoading) {
-            return <SkeletonPulse className={`${size} rounded-full`} />
-        }
-
         return (
             <div className={`flex ${size} items-center justify-center rounded-full bg-white/10 ${textSize} font-semibold group-hover:bg-white/20 transition overflow-hidden`}>
                 {user?.user_metadata?.avatar_url ? (
@@ -43,8 +39,8 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
                 <div className="hidden lg:flex flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="min-w-0">
-                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400 truncate">workspace</p>
-                            <h2 className="text-3xl font-semibold truncate">SWERI GROUP CHAT</h2>
+                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400 truncate">{chatSubtitle}</p>
+                            <h2 className="text-3xl font-semibold truncate">{chatTitle}</h2>
                         </div>
                     </div>
 
@@ -55,19 +51,13 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
                         >
                             <Avatar />
                             <div className="text-sm">
-                                {isLoading ? (
-                                    <SkeletonPulse className="w-24 h-4" />
-                                ) : (
-                                    <>
-                                        <p className="font-medium">{headerDisplayName}</p>
-                                        <p className="text-slate-400 flex items-center gap-1">
-                                            Online <span className="text-lime-500 text-lg">•</span>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline">
-                                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                            </svg>
-                                        </p>
-                                    </>
-                                )}
+                                <p className="font-medium">{headerDisplayName}</p>
+                                <p className="text-slate-400 flex items-center gap-1">
+                                    Online <span className="text-lime-500 text-lg">•</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline">
+                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                    </svg>
+                                </p>
                             </div>
                         </button>
 
@@ -103,8 +93,8 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
                             </svg>
                         </button>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 truncate leading-tight">workspace</p>
-                            <h2 className="text-base sm:text-lg font-bold truncate leading-tight mt-0.5">SWERI GROUP CHAT</h2>
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 truncate leading-tight">{chatSubtitle}</p>
+                            <h2 className="text-base sm:text-lg font-bold truncate leading-tight mt-0.5">{chatTitle}</h2>
                         </div>
                     </div>
 
@@ -116,16 +106,12 @@ function ChatHeader({ user, headerDisplayName, headerInitials, onProfileClick, o
                         >
                             <Avatar size="h-9 w-9" textSize="text-sm" />
                             <div className="text-xs min-w-0 hidden sm:block">
-                                {isLoading ? (
-                                    <SkeletonPulse className="w-16 h-3" />
-                                ) : (
-                                    <>
-                                        <p className="font-medium truncate max-w-[100px]">{headerDisplayName}</p>
-                                        <p className="text-slate-400 flex items-center gap-1">
-                                            <span className="text-lime-500 text-base">•</span> Online
-                                        </p>
-                                    </>
-                                )}
+                                <>
+                                    <p className="font-medium truncate max-w-[100px]">{headerDisplayName}</p>
+                                    <p className="text-slate-400 flex items-center gap-1">
+                                        <span className="text-lime-500 text-base">•</span> Online
+                                    </p>
+                                </>
                             </div>
                         </button>
 

@@ -1,6 +1,6 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { useAuthStore } from './stores/useAuthStore'
 import LoadingSpinner from './components/LoadingSpinner'
 
 // ============================================
@@ -17,29 +17,37 @@ const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'))
  * App Component
  * 
  * Root component with lazy loading and code splitting.
- * Each page is loaded only when needed.
+ * Uses useAuthStore for session management.
  */
 function App() {
+  const initSession = useAuthStore((state) => state.initSession)
+
+  useEffect(() => {
+    // Initialize Auth Session on App Mount
+    const cleanupPromise = initSession()
+    return () => {
+      cleanupPromise.then(cleanup => cleanup && cleanup())
+    }
+  }, [initSession])
+
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-              path="/chat"
-              element={
-                <ProtectedRoute>
-                  <Chat />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </Suspense>
-      </AuthProvider>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <Chat />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
