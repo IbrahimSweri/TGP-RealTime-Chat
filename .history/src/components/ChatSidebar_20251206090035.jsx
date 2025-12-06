@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { UserListSkeleton } from './Skeletons'
 import { UserItem } from './MemoizedComponents'
-import { useChatStore } from '../stores/useChatStore'
 
 /**
  * ChatSidebar Component
@@ -9,8 +8,7 @@ import { useChatStore } from '../stores/useChatStore'
  * Displays the list of users with online/offline status.
  * Uses memoized UserItem for better performance.
  */
-function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false, onSelectUser, onSelectGeneral }) {
-    const getUnreadCountForUser = useChatStore(state => state.getUnreadCountForUser)
+function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false, onSelectUser, onSelectGeneral, unreadCounts = {} }) {
     // Sort users: Online first, then alphabetical
     const sortedUsers = [...users].sort((a, b) => {
         const aOnline = onlineUserIds.has(a.id)
@@ -117,7 +115,8 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
                                     key={user.id}
                                     user={user}
                                     isOnline={onlineUserIds.has(user.id)}
-                                    unreadCount={getUnreadCountForUser(user.id)}
+                                    unreadCount={unreadCounts[user.id] || 0}
+                                    // Add click handler to select user
                                     onClick={() => {
                                         if (onSelectUser) onSelectUser(user)
                                         if (onClose) onClose()

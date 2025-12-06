@@ -30,47 +30,14 @@ export const useChatStore = create(persist((set, get) => ({
   messageInput: '',
   roomId: null,
   unreadCounts: {},
-  directMessageRooms: {}, // Maps user IDs to their direct message room IDs
 
   // Actions
-  clearUnread: (roomId) => {
+  clearUnread: (userId) => {
       set((state) => {
           const newCounts = { ...state.unreadCounts }
-          delete newCounts[roomId]
+          delete newCounts[userId]
           return { unreadCounts: newCounts }
       })
-  },
-
-  getUnreadCountForUser: (userId) => {
-      const state = get()
-      const roomId = state.directMessageRooms[userId]
-      return roomId ? state.unreadCounts[roomId] || 0 : 0
-  },
-
-  getOrCreateDirectMessageRoom: async (userId) => {
-      const supabaseReady = isSupabaseConfigured && Boolean(supabase)
-      if (!supabaseReady) return null
-
-      try {
-          const { data: roomId, error } = await supabase
-              .rpc('get_or_create_direct_room', { other_user_id: userId })
-
-          if (error) throw error
-
-          if (roomId) {
-              // Update the directMessageRooms mapping
-              set(state => ({
-                  directMessageRooms: {
-                      ...state.directMessageRooms,
-                      [userId]: roomId
-                  }
-              }))
-              return roomId
-          }
-      } catch (err) {
-          console.error('Failed to get or create direct message room:', err)
-          return null
-      }
   },
 
   selectUser: async (user) => {
@@ -84,16 +51,21 @@ export const useChatStore = create(persist((set, get) => ({
           return
       }
       
+      // Clear unread for this user immediately
+      currentState.clearUnread(user.id)
+
       set({ isLoadingRoom: true, error: '', selectedUser: user })
 
       try {
-          // Get or create the direct message room
-          const roomId = await currentState.getOrCreateDirectMessageRoom(user.id)
-          
+          // Call the RPC function to get/create the room safely on the server
+          const { data: roomId, error } = await supabase
+              .rpc('get_or_create_direct_room', { other_user_id: user.id })
+
+          if (error) throw error
+
           if (roomId) {
-              // Clear unread for this room when opening the chat
-              currentState.clearUnread(roomId)
               set({ roomId, messages: [], error: '' })
+              // Messages will be fetched by the effect in Chat.jsx when roomId changes
           }
       } catch (err) {
           console.error('Failed to select user/room:', err)
@@ -227,29 +199,30 @@ export const useChatStore = create(persist((set, get) => ({
                         return { messages: [...state.messages, incoming] }
                     })
                 } 
-                // 2. If message is for another room, increment unread count for that room
+                // 2. If message is for another room, increment unread count for the sender
                 else {
                     const currentUser = useAuthStore.getState().user
-                    const isOwnMessage = newMessage.user_id === currentUser?.id
                     
-                    // Don't increment unread for own messages or system messages
-                    if (isOwnMessage || !newMessage.room_id) {
-                        console.log('Ignoring message from unread counts:', isOwnMessage ? 'own message' : 'no room_id')
-                        return
+                    // Ignore own messages (e.g. sent from another tab)
+                    if (newMessage.user_id === currentUser?.id) {
+                         console.log('Ignoring own message from unread counts')
+                         return
                     }
 
-                    console.log('Incrementing unread for room:', newMessage.room_id)
+                    console.log('Incrementing unread for:', newMessage.user_id)
                     
-                    set((state) => {
-                        const current = state.unreadCounts[newMessage.room_id] || 0
-                        console.log(`Updating unread count for room ${newMessage.room_id} from ${current} to ${current + 1}`)
-                        return {
-                            unreadCounts: {
-                                ...state.unreadCounts,
-                                [newMessage.room_id]: current + 1
-                            }
-                        }
-                    })
+                    if (newMessage.user_id) {
+                         set((state) => {
+                             const current = state.unreadCounts[newMessage.user_id] || 0
+                             console.log(`Updating unread variable for user ${newMessage.user_id} from ${current} to ${current + 1}`)
+                             return {
+                                 unreadCounts: {
+                                     ...state.unreadCounts,
+                                     [newMessage.user_id]: current + 1
+                                 }
+                             }
+                         })
+                    }
                 }
                 break
             }
@@ -352,8 +325,7 @@ export const useChatStore = create(persist((set, get) => ({
   partialize: (state) => ({
     roomId: state.roomId,
     unreadCounts: state.unreadCounts,
-    selectedUser: state.selectedUser,
-    directMessageRooms: state.directMessageRooms
+    selectedUser: state.selectedUser
   })
 }
 ))

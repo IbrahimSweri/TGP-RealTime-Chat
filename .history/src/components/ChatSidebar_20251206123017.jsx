@@ -9,8 +9,7 @@ import { useChatStore } from '../stores/useChatStore'
  * Displays the list of users with online/offline status.
  * Uses memoized UserItem for better performance.
  */
-function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false, onSelectUser, onSelectGeneral }) {
-    const getUnreadCountForUser = useChatStore(state => state.getUnreadCountForUser)
+function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false, onSelectUser, onSelectGeneral, unreadCounts = {} }) {
     // Sort users: Online first, then alphabetical
     const sortedUsers = [...users].sort((a, b) => {
         const aOnline = onlineUserIds.has(a.id)
@@ -112,18 +111,21 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
                         </div>
                     ) : (
                         <div className="space-y-1">
-                            {sortedUsers.map((user) => (
-                                <UserItem
-                                    key={user.id}
-                                    user={user}
-                                    isOnline={onlineUserIds.has(user.id)}
-                                    unreadCount={getUnreadCountForUser(user.id)}
-                                    onClick={() => {
-                                        if (onSelectUser) onSelectUser(user)
-                                        if (onClose) onClose()
-                                    }}
-                                />
-                            ))}
+                            {sortedUsers.map((user) => {
+                                const getUnreadCountForUser = useChatStore(state => state.getUnreadCountForUser)
+                                return (
+                                    <UserItem
+                                        key={user.id}
+                                        user={user}
+                                        isOnline={onlineUserIds.has(user.id)}
+                                        unreadCount={getUnreadCountForUser(user.id)}
+                                        onClick={() => {
+                                            if (onSelectUser) onSelectUser(user)
+                                            if (onClose) onClose()
+                                        }}
+                                    />
+                                )
+                            })}
                         </div>
                     )}
                 </div>
