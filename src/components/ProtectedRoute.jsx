@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 
 function ProtectedRoute({ children }) {
+  // For primitive values, separate selectors are more efficient and safe
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const authLoading = useAuthStore((state) => state.authLoading)
   const location = useLocation()

@@ -51,17 +51,45 @@ export const usePresenceStore = create((set, get) => ({
     presenceChannel
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.presenceState()
-        set({ onlineUserIds: new Set(Object.keys(state)) })
+        const newOnlineIds = new Set(Object.keys(state))
+        set((currentState) => {
+          // Only update if Set contents actually changed
+          const currentIds = currentState.onlineUserIds
+          if (currentIds.size !== newOnlineIds.size) {
+            return { onlineUserIds: newOnlineIds }
+          }
+          // Check if any IDs differ
+          for (const id of newOnlineIds) {
+            if (!currentIds.has(id)) {
+              return { onlineUserIds: newOnlineIds }
+            }
+          }
+          for (const id of currentIds) {
+            if (!newOnlineIds.has(id)) {
+              return { onlineUserIds: newOnlineIds }
+            }
+          }
+          // No changes, return current state to prevent rerender
+          return currentState
+        })
       })
       .on('presence', { event: 'join' }, ({ key }) => {
         set((state) => {
-            const next = new Set(state.onlineUserIds)
-            next.add(key)
-            return { onlineUserIds: next }
+          // Only update if key is not already in the Set
+          if (state.onlineUserIds.has(key)) {
+            return state // No change, prevent rerender
+          }
+          const next = new Set(state.onlineUserIds)
+          next.add(key)
+          return { onlineUserIds: next }
         })
       })
       .on('presence', { event: 'leave' }, ({ key }) => {
         set((state) => {
+          // Only update if key is actually in the Set
+          if (!state.onlineUserIds.has(key)) {
+            return state // No change, prevent rerender
+          }
           const next = new Set(state.onlineUserIds)
           next.delete(key)
           return { onlineUserIds: next }

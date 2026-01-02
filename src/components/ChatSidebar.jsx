@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { UserListSkeleton } from './Skeletons'
 import { UserItem } from './MemoizedComponents'
 import { useChatStore } from '../stores/useChatStore'
@@ -9,17 +9,20 @@ import { useChatStore } from '../stores/useChatStore'
  * Displays the list of users with online/offline status.
  * Uses memoized UserItem for better performance.
  */
-function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false, onSelectUser, onSelectGeneral }) {
+function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false, onSelectUser, onSelectGeneral, unreadCounts }) {
     const getUnreadCountForUser = useChatStore(state => state.getUnreadCountForUser)
-    // Sort users: Online first, then alphabetical
-    const sortedUsers = [...users].sort((a, b) => {
-        const aOnline = onlineUserIds.has(a.id)
-        const bOnline = onlineUserIds.has(b.id)
 
-        if (aOnline && !bOnline) return -1
-        if (!aOnline && bOnline) return 1
-        return (a.username || '').localeCompare(b.username || '')
-    })
+    // Memoize sorted users to prevent recalculation on every render
+    const sortedUsers = useMemo(() => {
+        return [...users].sort((a, b) => {
+            const aOnline = onlineUserIds.has(a.id)
+            const bOnline = onlineUserIds.has(b.id)
+
+            if (aOnline && !bOnline) return -1
+            if (!aOnline && bOnline) return 1
+            return (a.username || '').localeCompare(b.username || '')
+        })
+    }, [users, onlineUserIds])
 
     const totalUsers = users.length
     const onlineUsers = onlineUserIds.size
@@ -132,5 +135,64 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
     )
 }
 
-// Memoize the entire sidebar
-export default memo(ChatSidebar)
+// Custom comparison function for memo
+const arePropsEqual = (prevProps, nextProps) => {
+    // Check primitive props
+    if (
+        prevProps.isOpen !== nextProps.isOpen ||
+        prevProps.isLoading !== nextProps.isLoading ||
+        prevProps.users.length !== nextProps.users.length ||
+        prevProps.onlineUserIds.size !== nextProps.onlineUserIds.size
+    ) {
+        return false
+    }
+
+    // Check if users array has changed (by reference or content)
+    const usersChanged = prevProps.users.some((user, index) => {
+        const nextUser = nextProps.users[index]
+        return (
+            user.id !== nextUser?.id ||
+            user.username !== nextUser?.username ||
+            user.avatar_url !== nextUser?.avatar_url
+        )
+    })
+    if (usersChanged) {
+        return false
+    }
+
+    // Check if onlineUserIds Set has changed
+    // Since Sets are compared by reference, we need to check if the contents are the same
+    if (prevProps.onlineUserIds.size !== nextProps.onlineUserIds.size) {
+        return false
+    }
+    for (const id of prevProps.onlineUserIds) {
+        if (!nextProps.onlineUserIds.has(id)) {
+            return false
+        }
+    }
+    for (const id of nextProps.onlineUserIds) {
+        if (!prevProps.onlineUserIds.has(id)) {
+            return false
+        }
+    }
+
+    // Check if unreadCounts object has changed
+    const prevKeys = Object.keys(prevProps.unreadCounts || {})
+    const nextKeys = Object.keys(nextProps.unreadCounts || {})
+    if (prevKeys.length !== nextKeys.length) {
+        return false
+    }
+    for (const key of prevKeys) {
+        if (prevProps.unreadCounts[key] !== nextProps.unreadCounts[key]) {
+            return false
+        }
+    }
+
+    // Handler functions should be stable (memoized with useCallback), so we can skip deep comparison
+    // If they're not stable, the component will rerender anyway when they change
+
+    return true
+}
+
+// Memoize the entire sidebar with custom comparison
+export default memo(ChatSidebar, arePropsEqual)

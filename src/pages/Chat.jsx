@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // Stores
@@ -73,23 +73,41 @@ function Chat() {
   const selectedUserStatus = selectedUser && onlineUserIds.has(selectedUser.id) ? 'Online' : 'Offline'
 
   // Handlers
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout()
     navigate('/login', { replace: true })
-  }
+  }, [logout, navigate])
 
-  const handleSend = () => sendMessage(messageInput, user)
+  const handleSend = useCallback(() => {
+    sendMessage(messageInput, user)
+  }, [sendMessage, messageInput, user])
 
-  const handleSelectUser = async (user) => {
+  const handleSelectUser = useCallback(async (user) => {
     // Pass entire user object
     await selectUser(user)
     setSidebarOpen(false)
-  }
+  }, [selectUser, setSidebarOpen])
 
-  const handleSelectGeneral = async () => {
+  const handleSelectGeneral = useCallback(async () => {
     await initDefaultRoom(true)
     setSidebarOpen(false)
-  }
+  }, [initDefaultRoom, setSidebarOpen])
+
+  const handleCloseSidebar = useCallback(() => {
+    setSidebarOpen(false)
+  }, [setSidebarOpen])
+
+  const handleCloseProfile = useCallback(() => {
+    setProfileOpen(false)
+  }, [setProfileOpen])
+
+  const handleOpenProfile = useCallback(() => {
+    setProfileOpen(true)
+  }, [setProfileOpen])
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarOpen(true)
+  }, [setSidebarOpen])
 
   // ============================================
   // Effects
@@ -133,7 +151,7 @@ function Chat() {
       {/* Profile Dialog */}
       <ProfileDialog
         isOpen={isProfileOpen}
-        onClose={() => setProfileOpen(false)}
+        onClose={handleCloseProfile}
       />
 
       <div className="mx-auto flex max-w-7xl gap-4 flex-1 min-h-0 w-full">
@@ -142,7 +160,7 @@ function Chat() {
           users={allUsers}
           onlineUserIds={onlineUserIds}
           isOpen={isSidebarOpen}
-          onClose={() => setSidebarOpen(false)}
+          onClose={handleCloseSidebar}
           isLoading={isLoadingUsers}
           onSelectUser={handleSelectUser}
           onSelectGeneral={handleSelectGeneral}
@@ -159,9 +177,9 @@ function Chat() {
               chatSubtitle={chatSubtitle}
               headerDisplayName={headerDisplayName}
               headerInitials={headerInitials}
-              onProfileClick={() => setProfileOpen(true)}
+              onProfileClick={handleOpenProfile}
               onLogout={handleLogout}
-              onToggleSidebar={() => setSidebarOpen(true)}
+              onToggleSidebar={handleToggleSidebar}
               isLoading={isLoadingRoom}
             />
           </div>
