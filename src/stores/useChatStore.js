@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuthStore } from './useAuthStore'
+import { logger } from '../utils/logger'
 
 // Helper helpers
 const decodeHTMLEntities = (text) => {
@@ -68,7 +69,7 @@ export const useChatStore = create(persist((set, get) => ({
               return roomId
           }
       } catch (err) {
-          console.error('Failed to get or create direct message room:', err)
+          logger.error('Failed to get or create direct message room:', err)
           return null
       }
   },
@@ -96,7 +97,7 @@ export const useChatStore = create(persist((set, get) => ({
               set({ roomId, messages: [], error: '' })
           }
       } catch (err) {
-          console.error('Failed to select user/room:', err)
+          logger.error('Failed to select user/room:', err)
           set({ error: err.message || 'Failed to open chat' })
       } finally {
           set({ isLoadingRoom: false })
@@ -130,7 +131,7 @@ export const useChatStore = create(persist((set, get) => ({
         let targetRoomId = data?.id
 
         if (!targetRoomId) {
-           console.log('General room not found, creating it...')
+           logger.log('General room not found, creating it...')
            // Create General room if missing
            const { data: newRoom, error: createError } = await supabase
              .from('rooms')
@@ -144,7 +145,7 @@ export const useChatStore = create(persist((set, get) => ({
 
         set({ roomId: targetRoomId, selectedUser: null })
     } catch (err) {
-        console.error('Failed to initialize room:', err)
+        logger.error('Failed to initialize room:', err)
         set({ error: err.message ?? 'Failed to load room', roomId: null, selectedUser: null })
     } finally {
         set({ isLoadingRoom: false })
@@ -178,7 +179,7 @@ export const useChatStore = create(persist((set, get) => ({
 
         set({ messages: (data ?? []).map(mapDbMessage) })
     } catch (err) {
-        console.error('Failed to fetch messages:', err)
+        logger.error('Failed to fetch messages:', err)
         set({ error: err.message ?? 'Failed to load messages', messages: [] })
     } finally {
         set({ isLoadingMessages: false })
@@ -234,15 +235,15 @@ export const useChatStore = create(persist((set, get) => ({
                     
                     // Don't increment unread for own messages or system messages
                     if (isOwnMessage || !newMessage.room_id) {
-                        console.log('Ignoring message from unread counts:', isOwnMessage ? 'own message' : 'no room_id')
+                        logger.debug('Ignoring message from unread counts:', isOwnMessage ? 'own message' : 'no room_id')
                         return
                     }
 
-                    console.log('Incrementing unread for room:', newMessage.room_id)
+                    logger.debug('Incrementing unread for room:', newMessage.room_id)
                     
                     set((state) => {
                         const current = state.unreadCounts[newMessage.room_id] || 0
-                        console.log(`Updating unread count for room ${newMessage.room_id} from ${current} to ${current + 1}`)
+                        logger.debug(`Updating unread count for room ${newMessage.room_id} from ${current} to ${current + 1}`)
                         return {
                             unreadCounts: {
                                 ...state.unreadCounts,
@@ -310,7 +311,7 @@ export const useChatStore = create(persist((set, get) => ({
         })
         if (error) throw error
     } catch (err) {
-        console.error('Failed to send message:', err)
+        logger.error('Failed to send message:', err)
         // Optionally handle error state
     }
   },
@@ -325,7 +326,7 @@ export const useChatStore = create(persist((set, get) => ({
         .eq('id', messageId)
       if (error) throw error
     } catch (err) {
-      console.error('Failed to edit message:', err)
+      logger.error('Failed to edit message:', err)
     }
   },
 
@@ -343,7 +344,7 @@ export const useChatStore = create(persist((set, get) => ({
         .eq('id', messageId)
       if (error) throw error
     } catch (err) {
-      console.error('Failed to delete message:', err)
+      logger.error('Failed to delete message:', err)
     }
   },
 }),

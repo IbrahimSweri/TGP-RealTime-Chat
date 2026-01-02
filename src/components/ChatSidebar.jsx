@@ -121,10 +121,10 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
                                     user={user}
                                     isOnline={onlineUserIds.has(user.id)}
                                     unreadCount={getUnreadCountForUser(user.id)}
-                                    onClick={() => {
-                                        if (onSelectUser) onSelectUser(user)
-                                        if (onClose) onClose()
-                                    }}
+                                    onClick={onSelectUser ? () => {
+                                        onSelectUser(user)
+                                        onClose?.()
+                                    } : undefined}
                                 />
                             ))}
                         </div>

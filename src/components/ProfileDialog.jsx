@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuthStore } from '../stores/useAuthStore'
 import { supabase } from '../lib/supabase'
+import { logger } from '../utils/logger'
 
 export default function ProfileDialog({ isOpen, onClose }) {
     const user = useAuthStore((state) => state.user)
@@ -70,7 +71,7 @@ export default function ProfileDialog({ isOpen, onClose }) {
             window.location.reload()
 
         } catch (error) {
-            console.error('Error updating profile:', error)
+            logger.error('Error updating profile:', error)
             setMessage({ type: 'error', text: error.message })
         } finally {
             setIsLoading(false)

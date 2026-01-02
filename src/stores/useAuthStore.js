@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { logger } from '../utils/logger'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -8,7 +9,7 @@ export const useAuthStore = create((set, get) => ({
 
   initSession: async () => {
     if (!isSupabaseConfigured || !supabase) {
-      console.error('Supabase is not configured. Auth features are disabled.')
+      logger.error('Supabase is not configured. Auth features are disabled.')
       set({ authLoading: false })
       return
     }
@@ -16,7 +17,7 @@ export const useAuthStore = create((set, get) => ({
     // Get initial session
     const { data, error } = await supabase.auth.getSession()
     if (error) {
-      console.error('Failed to get session', error)
+      logger.error('Failed to get session', error)
     }
     set({ 
       user: data?.session?.user ?? null, 
@@ -43,10 +44,10 @@ export const useAuthStore = create((set, get) => ({
           }, { onConflict: 'id' }) // Upsert based on ID
 
           if (profileError) {
-             console.error('Failed to sync profile:', profileError)
+             logger.error('Failed to sync profile:', profileError)
           }
         } catch (err) {
-          console.error('Profile sync exception:', err)
+          logger.error('Profile sync exception:', err)
         }
       }
     })
@@ -62,7 +63,7 @@ export const useAuthStore = create((set, get) => ({
                 updated_at: new Date().toISOString(),
             }, { onConflict: 'id' })
         } catch (err) {
-            console.error('Initial profile sync failed:', err)
+            logger.error('Initial profile sync failed:', err)
         }
     }
 
@@ -103,10 +104,10 @@ export const useAuthStore = create((set, get) => ({
       })
 
       if (profileError) {
-        console.error('Failed to upsert profile', profileError)
-        console.warn('Profile creation failed. This is usually due to RLS policies. Run fix_profiles_rls.sql')
+        logger.error('Failed to upsert profile', profileError)
+        logger.warn('Profile creation failed. This is usually due to RLS policies. Run fix_profiles_rls.sql')
       } else {
-        console.log('Profile created successfully for user:', displayName)
+        logger.log('Profile created successfully for user:', displayName)
       }
     }
 

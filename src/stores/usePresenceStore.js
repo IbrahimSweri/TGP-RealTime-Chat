@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { logger } from '../utils/logger'
 
 export const usePresenceStore = create((set, get) => ({
   allUsers: [],
@@ -26,7 +27,7 @@ export const usePresenceStore = create((set, get) => ({
       
       set({ allUsers: data || [] })
     } catch (err) {
-      console.error('Failed to fetch users:', err)
+      logger.error('Failed to fetch users:', err)
     } finally {
       set({ isLoading: false })
     }
