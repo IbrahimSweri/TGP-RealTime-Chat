@@ -50,6 +50,7 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
                     ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                     flex flex-col
                 `}
+                aria-label="User list sidebar"
             >
                 {/* Header */}
                 <div className="p-5 border-b border-white/10 shrink-0">
@@ -58,8 +59,9 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
                         <button
                             onClick={onClose}
                             className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition"
+                            aria-label="Close sidebar"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>
@@ -90,8 +92,17 @@ function ChatSidebar({ users, onlineUserIds, isOpen, onClose, isLoading = false,
                                 if (onSelectGeneral) onSelectGeneral()
                                 if (onClose) onClose()
                             }}
+                            onKeyDown={(e) => {
+                                if ((e.key === 'Enter' || e.key === ' ') && onSelectGeneral) {
+                                    e.preventDefault()
+                                    onSelectGeneral()
+                                    if (onClose) onClose()
+                                }
+                            }}
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition cursor-pointer"
                             role="button"
+                            tabIndex={0}
+                            aria-label="Select General chat room"
                         >
                             <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

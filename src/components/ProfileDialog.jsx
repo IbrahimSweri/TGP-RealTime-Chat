@@ -66,9 +66,13 @@ export default function ProfileDialog({ isOpen, onClose }) {
 
             if (profileError) throw profileError
 
-            // Close immediately on success (no success message)
+            // Update local state to reflect changes immediately
+            // The auth store will automatically update via onAuthStateChange listener
+            setDisplayName(displayName)
+            setAvatarFile(null)
+            
+            // Close dialog on success
             onClose()
-            window.location.reload()
 
         } catch (error) {
             logger.error('Error updating profile:', error)

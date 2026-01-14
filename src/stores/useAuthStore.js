@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { logger } from '../utils/logger'
+import { retrySupabaseOperation } from '../utils/retry'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -74,50 +75,97 @@ export const useAuthStore = create((set, get) => ({
 
   login: async ({ email, password }) => {
     if (!supabase) throw new Error('Supabase client not available')
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    set({ user: data.user, isAuthenticated: true })
-    return data
+    
+    try {
+      const { data, error } = await retrySupabaseOperation(
+        async () => {
+          const result = await supabase.auth.signInWithPassword({ email, password })
+          if (result.error) throw result.error
+          return result
+        },
+        { maxRetries: 2 } // Fewer retries for auth operations
+      )
+      
+      set({ user: data.user, isAuthenticated: true })
+      return data
+    } catch (error) {
+      // Provide user-friendly error messages
+      if (error.message?.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password')
+      }
+      if (error.message?.includes('Email not confirmed')) {
+        throw new Error('Please confirm your email before logging in')
+      }
+      throw error
+    }
   },
 
   signup: async ({ email, password, displayName }) => {
     if (!supabase) throw new Error('Supabase client not available')
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
-        },
-      },
-    })
     
-    if (error) throw error
+    try {
+      const { data, error } = await retrySupabaseOperation(
+        async () => {
+          const result = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                display_name: displayName,
+              },
+            },
+          })
+          if (result.error) throw result.error
+          return result
+        },
+        { maxRetries: 2 }
+      )
 
-    const user = data.user
-    // Profile creation logic (kept from AuthContext)
-    if (user && displayName) {
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: user.id,
-        username: displayName,
-        updated_at: new Date().toISOString(),
-      })
-
-      if (profileError) {
-        logger.error('Failed to upsert profile', profileError)
-        logger.warn('Profile creation failed. This is usually due to RLS policies. Run fix_profiles_rls.sql')
-      } else {
-        logger.log('Profile created successfully for user:', displayName)
+      const user = data.user
+      // Profile creation logic (kept from AuthContext)
+      if (user && displayName) {
+        try {
+          await retrySupabaseOperation(async () => {
+            const { error: profileError } = await supabase.from('profiles').upsert({
+              id: user.id,
+              username: displayName,
+              updated_at: new Date().toISOString(),
+            })
+            if (profileError) throw profileError
+          })
+          logger.log('Profile created successfully for user:', displayName)
+        } catch (profileError) {
+          logger.error('Failed to upsert profile after retries', profileError)
+          logger.warn('Profile creation failed. This is usually due to RLS policies. Run fix_profiles_rls.sql')
+          // Don't throw - signup succeeded even if profile creation failed
+        }
       }
-    }
 
-    return data
+      return data
+    } catch (error) {
+      // Provide user-friendly error messages
+      if (error.message?.includes('User already registered')) {
+        throw new Error('An account with this email already exists')
+      }
+      if (error.message?.includes('Password')) {
+        throw new Error('Password does not meet requirements')
+      }
+      throw error
+    }
   },
 
   logout: async () => {
     if (!supabase) return
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    set({ user: null, isAuthenticated: false })
+    try {
+      await retrySupabaseOperation(async () => {
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+      }, { maxRetries: 1 }) // Logout doesn't need many retries
+    } catch (error) {
+      logger.error('Failed to logout:', error)
+      // Still clear local state even if logout fails
+    } finally {
+      set({ user: null, isAuthenticated: false })
+    }
   }
 }))

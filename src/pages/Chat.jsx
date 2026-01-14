@@ -43,6 +43,9 @@ function Chat() {
   const selectUser = useChatStore((state) => state.selectUser)
   const selectedUser = useChatStore((state) => state.selectedUser)
   const unreadCounts = useChatStore((state) => state.unreadCounts)
+  const subscribeToReadReceipts = useChatStore((state) => state.subscribeToReadReceipts)
+  const markRoomAsRead = useChatStore((state) => state.markRoomAsRead)
+  const fetchReadReceipts = useChatStore((state) => state.fetchReadReceipts)
 
   // Presence Store
   const allUsers = usePresenceStore((state) => state.allUsers)
@@ -142,6 +145,29 @@ function Chat() {
       }
     }
   }, [user, fetchUsers, subscribeToPresence])
+
+  // 4. Fetch read receipts for current messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      const messageIds = messages.map(m => m.id)
+      fetchReadReceipts(messageIds)
+    }
+  }, [messages, fetchReadReceipts])
+
+  // 5. Subscribe to read receipts
+  useEffect(() => {
+    const cleanup = subscribeToReadReceipts()
+    return () => {
+      cleanup && cleanup()
+    }
+  }, [subscribeToReadReceipts])
+
+  // 6. Mark room as read when entering
+  useEffect(() => {
+    if (roomId && user) {
+      markRoomAsRead()
+    }
+  }, [roomId, user, markRoomAsRead])
 
   // ============================================
   // Render
